@@ -100,7 +100,7 @@ func getLightBlueColor() color.Color {
 
 func main() {
 	m := pdf.NewMaroto(consts.Portrait, consts.Letter)
-	m.SetPageMargins(20, 10, 20)
+	m.SetPageMargins(10, 10, 10)
 	heading(m)
 	sendToInvoice(m)
 
