@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"github.com/johnfercher/maroto/pkg/color"
 	"github.com/johnfercher/maroto/pkg/consts"
@@ -8,6 +9,41 @@ import (
 	"github.com/johnfercher/maroto/pkg/props"
 	"os"
 )
+
+func csvRead() [][]string {
+	fd, err := os.Open("internal/data.csv")
+	if err != nil {
+		fmt.Println("Got error while opening file:", err)
+	}
+	fmt.Println("File opened successfully!")
+	defer fd.Close()
+
+	fileReader := csv.NewReader(fd)
+
+	records, err := fileReader.ReadAll()
+	if err != nil {
+		fmt.Println("Got error while reading file:", err)
+	}
+	fmt.Println(records)
+	return records
+}
+
+func loadCSV(path string) [][]string {
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Got error while opening file:", err)
+		os.Exit(1)
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	records, err := r.ReadAll()
+	if err != nil {
+		fmt.Println("Got error while reading file:", err)
+		os.Exit(1)
+	}
+	return records
+}
 
 func heading(m pdf.Maroto) {
 	m.RegisterHeader(func() {
@@ -46,11 +82,8 @@ func getBlueColor() color.Color {
 }
 
 func sendToInvoice(m pdf.Maroto) {
-	tableToHeadings := []string{"Date", "Invoice No.", "Company", "Address", "City", "State", "Zip", "Phone", "Email", "Amount"}
-	//tableFromHeadings := []string{"Date", "Invoice No.", "Company", "Address", "City", "State", "Zip", "Phone", "Email", "Amount"}
-	//contentsTo := [][]string{{"2020-01-01", "INV-0001", "ABC Services", "123 Main St.", "New York", "NY", "10001", "212-555-1212"}, {"2020-01-02", "INV-0002", "ACME", "321 Main St.", "New York", "NY", "10001", "212-555-5555"}}
-	//contentFrom := [][]string{{"2020-01-01", "INV-0001", "Reticent Services LLC", "123 Anywhere St.", "New York", "NY", "10001", "555-212-5555"}, {"2020-01-02", "INV-0002", "Reticent Services LLC", "123 Anywhere St.", "New York", "NY", "10001", "555-212-5555"}}
-	content := [][]string{{"2020-01-01", "INV-0001", "ABC Services", "123 Main St.", "New York", "NY", "10001", "212-555-1212", "abc@abc.com", "$100.00"}}
+	tableHeadings := []string{"Player", "Country", "Age"}
+	content := csvRead()
 	lightBlue := getLightBlueColor()
 	m.SetBackgroundColor(getTealColor())
 	m.Row(10, func() {
@@ -66,7 +99,7 @@ func sendToInvoice(m pdf.Maroto) {
 		})
 	})
 
-	m.TableList(tableToHeadings, content, props.TableList{
+	m.TableList(tableHeadings, content, props.TableList{
 		HeaderProp: props.TableListContent{
 			Size:      9,
 			GridSizes: []uint{1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
