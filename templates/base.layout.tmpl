@@ -1,0 +1,38 @@
+{{define "base"}}
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <!-- CSS only -->
+        <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+
+
+        <title>CSVing</title>
+    </head>
+    <body>
+textarea#displayArea {
+  width:100%;
+  height: 500px;
+}
+<script>
+    const UploadCSV = () => {
+        var fileUpload = document.getElementById("fileUpload");
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var table = document.createElement("table");
+                    var rows = e.target.result.split("");
+                    }
+                   }
+                  }
+                 }
+
+</script>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,20 @@
+<p><strong>Players:</strong></p>
+{{ range . }}
+<hr />
+
+<dl>
+    <dt>Player Name:</dt>
+    <dd>{{ .Name }}</dd>
+     <dt>Position:</dt><dd>{{.Position}}</dd>
+        <dt>Team:</dt><dd>{{.Team}}</dd>
+        <dt>Age:</dt><dd>{{.Age}}</dd>
+        <dt>Jersey:</dt><dd>{{.Jersey}}</dd>
+        <dt>Retired:</dt>{{ if .Retired }}
+                                 <dd>Yes</dd>
+                             {{ else }}
+                                 <dd>No</dd>
+                             {{ end }}
+
+
+</dl>
+{{ end }}

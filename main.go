@@ -132,6 +132,7 @@ func getLightBlueColor() color.Color {
 }
 
 func main() {
+
 	m := pdf.NewMaroto(consts.Portrait, consts.Letter)
 	m.SetPageMargins(10, 10, 10)
 	heading(m)
@@ -142,4 +143,5 @@ func main() {
 		fmt.Println("Got error while creating pdf:", err)
 		os.Exit(1)
 	}
+
 }
