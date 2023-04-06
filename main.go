@@ -1,20 +1,26 @@
 package main
 
 import (
+	"awesomeInvoice/internal/repository"
+	"awesomeInvoice/internal/repository/dbrepo"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"github.com/johnfercher/maroto/pkg/color"
 	"github.com/johnfercher/maroto/pkg/consts"
 	"github.com/johnfercher/maroto/pkg/pdf"
 	"github.com/johnfercher/maroto/pkg/props"
+	"log"
+	"net/http"
 	"os"
 )
 
 func csvRead() [][]string {
-	fd, err := os.Open("internal/data.csv")
+	fd, err := os.Open("templates/players.html")
 	if err != nil {
 		fmt.Println("Got error while opening file:", err)
 	}
+
 	fmt.Println("File opened successfully!")
 	defer fd.Close()
 
@@ -82,7 +88,7 @@ func getBlueColor() color.Color {
 }
 
 func sendToInvoice(m pdf.Maroto) {
-	tableHeadings := []string{"Player", "Country", "Age"}
+	tableHeadings := []string{"Player Name", "Position", "Team", "Age", "Jersey", "Retired"}
 	content := csvRead()
 	lightBlue := getLightBlueColor()
 	m.SetBackgroundColor(getTealColor())
@@ -102,16 +108,16 @@ func sendToInvoice(m pdf.Maroto) {
 	m.TableList(tableHeadings, content, props.TableList{
 		HeaderProp: props.TableListContent{
 			Size:      9,
-			GridSizes: []uint{1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
+			GridSizes: []uint{1, 1, 1, 2, 1, 1},
 		},
 		ContentProp: props.TableListContent{
 			Size:      8,
-			GridSizes: []uint{1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
+			GridSizes: []uint{1, 1, 1, 2, 1, 1},
 		},
 		Align:                consts.Center,
 		AlternatedBackground: &lightBlue,
 		HeaderContentSpace:   2,
-		Line:                 false,
+		Line:                 true,
 	})
 }
 
@@ -131,17 +137,39 @@ func getLightBlueColor() color.Color {
 	}
 }
 
+type application struct {
+	DSN string
+	DB  repository.DatabaseRepo
+}
+
+const port = ":8080"
+
 func main() {
+	var app application
+
+	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5433 user=postgres password=postgres dbname=players sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection string")
+
+	flag.Parse()
+
+	conn, err := app.connectToDB()
+	if err != nil {
+		fmt.Println("Got error while connecting to database:", err)
+		os.Exit(1)
+	}
+	app.DB = &dbrepo.PostgresDBRepo{DB: conn}
+	defer app.DB.Connection().Close()
 
 	m := pdf.NewMaroto(consts.Portrait, consts.Letter)
 	m.SetPageMargins(10, 10, 10)
 	heading(m)
 	sendToInvoice(m)
 
-	err := m.OutputFileAndClose("internal/assets/reports/invoice.pdf")
+	err = m.OutputFileAndClose("internal/assets/reports/invoice.pdf")
 	if err != nil {
 		fmt.Println("Got error while creating pdf:", err)
 		os.Exit(1)
 	}
+	log.Println("Starting server on port", port)
 
+	err = http.ListenAndServe(port, app.routes())
 }
